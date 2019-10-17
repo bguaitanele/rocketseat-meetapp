@@ -1,13 +1,15 @@
-import User from '../models/User';
-import Meetup from '../models/Meetup';
 import * as Yup from 'yup';
 import { parseISO, addDays } from 'date-fns';
 import ptBr from 'date-fns/locale/pt-BR';
-import File from '../models/File';
 import { Op } from 'sequelize';
+import File from '../models/File';
+import Meetup from '../models/Meetup';
+import User from '../models/User';
 
 class MeetupController {
   async index(req, res) {
+    const { page = 1 } = req.query;
+
     const where = {};
     if (req.organizer) {
       where.user_id = req.userId;
@@ -17,10 +19,17 @@ class MeetupController {
       const date = parseISO(req.query.date, { locale: ptBr });
       where.date = { [Op.between]: [date, addDays(date, 1)] };
     }
-    const meetups = await Meetup.findAll({
+
+    // const total = await Meetup.findAndCountAll({
+    //   where,
+    // });
+
+    const meetups = await Meetup.findAndCountAll({
       where,
       attributes: ['id', 'title', 'description', 'address', 'date', 'past'],
       orderBy: ['date'],
+      limit: 10,
+      offset: (page - 1) * 10,
       include: [
         {
           model: User,
@@ -34,7 +43,8 @@ class MeetupController {
         },
       ],
     });
-    res.json(meetups);
+
+    return res.set('X-TOTAL-COUNT', meetups.count).json(meetups.rows);
   }
 
   async store(req, res) {
@@ -49,7 +59,7 @@ class MeetupController {
       return res.status(400).json({ error: 'Validation error' });
     }
 
-    //verifica se a data ja passou
+    // verifica se a data ja passou
     const parsedDate = parseISO(req.body.date);
     if (parsedDate < new Date()) {
       return res
@@ -73,7 +83,7 @@ class MeetupController {
 
     const meetup = await Meetup.create({ ...req.body, user_id: req.userId });
 
-    res.json(meetup);
+    return res.json(meetup);
   }
 
   async update(req, res) {
@@ -123,7 +133,7 @@ class MeetupController {
 
     await meetup.update({ ...req.body, user_id: req.userId });
 
-    res.json(meetup);
+    return res.json(meetup);
   }
 
   async get(req, res) {
