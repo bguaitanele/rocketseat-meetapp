@@ -1,10 +1,10 @@
-import User from '../models/User';
 import * as Yup from 'yup';
-import { updateLocale } from 'moment';
+import User from '../models/User';
+
 class UserController {
   async index(req, res) {
     const users = await User.findAll({
-      attributes: ['id', 'name', 'email'],
+      attributes: ['id', 'name', 'email', 'organizer'],
     });
     res.json(users);
   }
@@ -16,6 +16,7 @@ class UserController {
         .email()
         .required(),
       password: Yup.string().min(6),
+      organizer: Yup.boolean(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -26,8 +27,8 @@ class UserController {
     if (userExists) {
       return res.status(400).json({ error: 'E-mail already exists' });
     }
-    const { id, name, email } = await User.create(req.body);
-    res.json({ id, name, email });
+    const { id, name, email, organizer } = await User.create(req.body);
+    res.json({ id, name, email, organizer });
   }
 
   async update(req, res) {
@@ -74,9 +75,19 @@ class UserController {
       return res.status(400).json({ error: 'Wrong password' });
     }
 
-    const { id, name, email } = await user.update(req.body);
+    if (
+      req.body.oldPassword &&
+      req.body.password !== req.body.passwordConfirmation
+    ) {
+      return res
+        .status(400)
+        .json({ error: "New password didn't match with confirmation" });
+    }
 
-    res.json({ id, name, email });
+    if (req.body.organizer) delete req.body.organizer;
+    const { id, name, email, organizer } = await user.update(req.body);
+
+    res.json({ id, name, email, organizer });
   }
 }
 

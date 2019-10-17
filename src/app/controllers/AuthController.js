@@ -27,11 +27,11 @@ class AuthController {
       return res.status(401).json({ error: 'Password incorret' });
     }
 
-    const { name, id } = user;
+    const { name, id, organizer } = user;
 
     res.json({
-      user: { email, name, id },
-      token: jwt.sign({ id }, authConfig.secret, {
+      user: { email, name, id, organizer },
+      token: jwt.sign({ id, organizer }, authConfig.secret, {
         expiresIn: authConfig.expiresIn,
       }),
     });

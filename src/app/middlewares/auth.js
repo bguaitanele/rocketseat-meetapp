@@ -10,9 +10,12 @@ export default async (req, res, next) => {
 
   try {
     const [, token] = authorization.split(' ');
-    const { id } = await promisify(jwt.verify)(token, authConfig.secret);
+    const { id, organizer } = await promisify(jwt.verify)(
+      token,
+      authConfig.secret
+    );
     req.userId = id;
-    console.info(`User ${id} connected`);
+    req.organizer = organizer;
     return next();
   } catch (e) {
     return res.status(401).json({ error: 'Not Authorized' });
