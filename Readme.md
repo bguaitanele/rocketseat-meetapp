@@ -1,12 +1,26 @@
 # Meetapp - Backend node
 
+## Pré-requisitos
+
+Ter instalado:
+
+- Node
+- Yarn
+- Postgres
+- Redis
+
 ## Passos para instalação
 
-## Preparando código
+### Preparando código
 
-Baixe o projeto do git
+- Baixe o projeto do git
+- Na raiz do projeto rode:
 
-### Definição de veriáveis
+```
+yarn
+```
+
+### Definição de variáveis de ambiente
 
 Faça uma cópia do arquivo **.evn.example** na raiz do projeto para **.env**. Essa configuração é essencial para a aplicação se comunicar com o banco de dados do projeto, criando as tabelas necessárias, saber como enviar e-mails, e apontar para arquivos estáticos.
 
@@ -18,5 +32,34 @@ Esse projeto utiliza os bancos de dados postgres e redis. Vamos ver como configu
 
 ### Postgres
 
-No postgres cria um novo database. No Encoding selecione UTF8.
-No arquivo **_.env_** inclua as configurações do banco:
+No postgres, crie um novo database.
+No Encoding selecione UTF8.
+No arquivo **_.env_** inclua as configurações do banco.
+
+Rode na raiz do projeto:
+
+```
+yarn sequelize db:migrate
+```
+
+Esse procedimento criará as tabelas necessárias para a aplicação
+
+### Redis
+
+Basta configurar no **_.env_** o host e porta onde o redis está rodando em sua máquina.
+
+## Rodando o projeto
+
+Esse projeto roda dois serviços. Um com os serviços REST, e outro responsável pelo controle de fila assíncrona. Para rodar cada um deles:
+
+Aplicação
+
+```
+yarn dev
+```
+
+Fila
+
+```
+yarn queue
+```
